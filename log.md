@@ -23,5 +23,9 @@
 3. Manually? 
 
 
+### Date use agreement
+Nov 2 sent to Abeed and Mengyu
+
+
 ### Tasks
 - Intro 500 words by Tuesday 7th 
