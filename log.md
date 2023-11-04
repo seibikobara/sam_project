@@ -48,7 +48,10 @@ Nov 2 sent to Abeed and Mengyu
    3. ?
    
 
-
+- By Monday
+  - Alireza and Masoud would run an initial try for classification
+  - SK will find useful database for drug names and side effect
+  - Come up with the 3rd objective.
 
 
 
