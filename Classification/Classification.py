@@ -15,7 +15,7 @@ from collections import defaultdict
 import random
 from gensim.models import Word2Vec
 from textblob import TextBlob
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
@@ -386,15 +386,315 @@ for name, clf in classifiers.items():
 # NN
  # {'hidden_layer_sizes': (32, 64, 16), 'random_state': 1},
  # 0.8394552447184026)
+#%% run the fine-tuned classifiers
+classifiers = {
+    'Naive Bayes': GaussianNB(),
+    'SVM': SVC(C = 100, kernel = 'rbf', random_state = 1),
+    'Logistic Regression': LogisticRegression(C=0.01, penalty='l2', solver = 'lbfgs', random_state = 1),
+    'Random Forest': RandomForestClassifier(max_depth = None, min_samples_leaf = 1, min_samples_split = 2, n_estimators = 500, random_state = 1),
+    'XGBoost': XGBClassifier(learning_rate = 0.1, max_depth = 3, n_estimators = 500, random_state = 1),
+    'LightGBM': LGBMClassifier(learning_rate = 0.1, max_depth = 12, n_estimators = 500, random_state = 1),
+    'CatBoost': CatBoostClassifier(learning_rate = 0.1, iterations = 200 , depth =5, verbose=0, random_state = 1) 
+}
+
+# train classifiers and print evaluation metrics
+for name, clf in classifiers.items():
+    # train classifier
+    clf.fit(train_set, train_label)
+    
+    # make predictions
+    y_pred = clf.predict(test_set)
+    
+    # calculate metrics
+    acc = accuracy_score(test_label, y_pred)
+    f1_micro = f1_score(test_label, y_pred, average='micro')
+    f1_macro = f1_score(test_label, y_pred, average='macro')
+    
+    # print metrics
+    print(f"Classifier: {name}")
+    print(classification_report(test_label, y_pred))
+    print('-' * 40)
+    
+# Classifier: Naive Bayes
+#               precision    recall  f1-score   support
+
+#            0       0.95      0.57      0.71       896
+#            1       0.42      0.92      0.58       308
+
+#     accuracy                           0.66      1204
+#    macro avg       0.69      0.74      0.64      1204
+# weighted avg       0.82      0.66      0.68      1204
+
+# ----------------------------------------
+# Classifier: SVM
+#               precision    recall  f1-score   support
+
+#            0       0.86      0.94      0.90       896
+#            1       0.76      0.56      0.64       308
+
+#     accuracy                           0.84      1204
+#    macro avg       0.81      0.75      0.77      1204
+# weighted avg       0.83      0.84      0.83      1204
+
+# ----------------------------------------
+# Classifier: Logistic Regression
+#               precision    recall  f1-score   support
+
+#            0       0.87      0.91      0.89       896
+#            1       0.69      0.60      0.64       308
+
+#     accuracy                           0.83      1204
+#    macro avg       0.78      0.75      0.76      1204
+# weighted avg       0.82      0.83      0.82      1204
+
+# ----------------------------------------
+# Classifier: Random Forest
+#               precision    recall  f1-score   support
+
+#            0       0.84      0.97      0.90       896
+#            1       0.84      0.48      0.61       308
+
+#     accuracy                           0.84      1204
+#    macro avg       0.84      0.72      0.75      1204
+# weighted avg       0.84      0.84      0.83      1204
+
+# ----------------------------------------
+# Classifier: XGBoost
+#               precision    recall  f1-score   support
+
+#            0       0.88      0.94      0.91       896
+#            1       0.79      0.61      0.69       308
+
+#     accuracy                           0.86      1204
+#    macro avg       0.83      0.78      0.80      1204
+# weighted avg       0.85      0.86      0.85      1204
+
+# ----------------------------------------
+# Classifier: LightGBM
+#               precision    recall  f1-score   support
+
+#            0       0.89      0.95      0.92       896
+#            1       0.81      0.65      0.72       308
+
+#     accuracy                           0.87      1204
+#    macro avg       0.85      0.80      0.82      1204
+# weighted avg       0.87      0.87      0.86      1204
+
+# ----------------------------------------
+# Classifier: CatBoost
+#               precision    recall  f1-score   support
+
+#            0       0.87      0.95      0.91       896
+#            1       0.80      0.59      0.68       308
+
+#     accuracy                           0.86      1204
+#    macro avg       0.83      0.77      0.79      1204
+# weighted avg       0.85      0.86      0.85      1204
+#%% ensemble models
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 
 
+# initialize individual models
+clf1 = SVC(C = 100, kernel = 'rbf', random_state = 1)
+clf2 = RandomForestClassifier(max_depth = None, min_samples_leaf = 1, min_samples_split = 2, n_estimators = 500, random_state = 1)
+clf3 = XGBClassifier(learning_rate = 0.1, max_depth = 3, n_estimators = 500, random_state = 1)
+clf4 = LGBMClassifier(learning_rate = 0.1, max_depth = 12, n_estimators = 500, random_state = 1)
+clf5 = CatBoostClassifier(learning_rate = 0.1, iterations = 200 , depth =5, verbose=0, random_state = 1) 
 
+# create an ensemble of the models using majority class voting
+ensemble_clf = VotingClassifier(estimators=[
+    ('svm', clf1),
+    ('rf', clf2),
+    ('xgb', clf3), 
+    ('lgb', clf4), 
+    ('ctb', clf5)
+], voting='hard')  # 'hard' for majority class voting
 
+# fit the ensemble model on the training data
+ensemble_clf.fit(train_set , train_label)
 
+# make predictions on the test data
+y_pred = ensemble_clf.predict(test_set)
 
+# calculate micro and macro averaged F1 scores
+print(classification_report(test_label, y_pred))
 
+# Classifier: ensemble model
+#               precision    recall  f1-score   support
 
+#            0       0.87      0.96      0.91       896
+#            1       0.83      0.59      0.69       308
 
+#     accuracy                           0.86      1204
+#    macro avg       0.85      0.77      0.80      1204
+# weighted avg       0.86      0.86      0.86      1204
+#%% performance graph
+# training ratios to be checked
+train_sizes = np.arange(0.10, 1, 0.01)
+# store accuracy, F1-Micro, F1-Macro values
+hist_acc = np.zeros(len(train_sizes))
+hist_f1_micro = np.zeros(len(train_sizes))
+hist_f1_macro = np.zeros(len(train_sizes))
+# number of train samples
+n_train = train_set.shape[0]
+for i in range(len(train_sizes)):
+    print(i)
+    # number of train samples
+    n_sample = int(train_sizes[i] * n_train)
+    # create subsample of dataset
+    trainx_sub = train_set[:n_sample, :]
+    trainy_sub = train_label[:n_sample]
+    # create the best model 
+    model = LGBMClassifier(learning_rate = 0.1, max_depth = 12, n_estimators = 500, random_state = 1)
+    # train model
+    model.fit(trainx_sub, trainy_sub)
+    # predict on test data
+    testy_predict = model.predict(test_set)
+    # calculate accuracy
+    hist_acc[i] = accuracy_score(test_label, testy_predict)
+    hist_f1_micro[i] = f1_score(test_label, testy_predict, average='micro')
+    hist_f1_macro[i] = f1_score(test_label, testy_predict, average='macro')
 
+#%%
+# plot performance graph
+plt.figure()
+plt.scatter(train_sizes, hist_acc, color='g', alpha=0.1, s = 10)
+# plt.xlabel('size of training (%)')
+# plt.ylabel('test accuracy (%)')
+# plt.title('set size vs. performance graph')
+# plt.show()
 
+# plt.figure()
+# plt.scatter(train_sizes, hist_f1_micro, color='orange', alpha=0.1, s=10)
+# plt.xlabel('size of training (%)')
+# plt.ylabel('test F1-micr')
+# plt.title('set size vs. performance graph')
+# plt.show()
 
+# plt.figure()
+plt.scatter(train_sizes, hist_f1_macro, color='orange', alpha=0.1, s=10)
+# plt.xlabel('size of training (%)')
+# plt.ylabel('test F1-macro')
+# plt.title('set size vs. performance graph')
+# plt.show()
+
+# degree of polynomial
+d = 4
+coeff_acc = np.polyfit(train_sizes, hist_acc, d)
+p_acc = np.poly1d(coeff_acc)
+acc_smooth = p_acc(train_sizes)
+
+coeff_f1_micro = np.polyfit(train_sizes, hist_f1_micro, d)
+p_f1_micro = np.poly1d(coeff_f1_micro)
+f1_micro_smooth = p_f1_micro(train_sizes)
+
+coeff_f1_macro = np.polyfit(train_sizes, hist_f1_macro, d)
+p_f1_macro = np.poly1d(coeff_f1_macro)
+f1_macro_smooth = p_f1_macro(train_sizes)
+
+# plt.figure()
+plt.plot(train_sizes, acc_smooth, label='accuracy', color='g')
+# plt.plot(train_sizes, f1_micro_smooth, label='F1-micro', color='orange')
+plt.plot(train_sizes, f1_macro_smooth, label='F1-macro', color='orange')
+plt.xlabel('size of training (%)')
+plt.ylabel('test performance')
+plt.title('set size vs. performance graph')
+plt.grid()
+plt.legend()
+plt.show()
+#%% ablation study
+# best feature selection
+sel = [0, 1, 5, 6]
+feature_names = ['n-gram count vector', 'cluster count vector', 'Word2Vec embeddings', 'GloVe embeddings', 'n-gram tf-idf', 'cluster tf-idf', 'Other', 'BERT embeddings']
+for i in range(len(sel)):
+    # ablation feature selection: remove one feature at a time
+    sel_abl = sel.copy()
+    print(feature_names[sel[i]] + ' removed!')
+    sel_abl.pop(i)
+    trainx_abl = X_train_all[sel_abl[0]]
+    testx_abl = X_test_all[sel_abl[0]]
+    j = 1
+    while(len(sel_abl) > j):
+        trainx_abl = np.concatenate((trainx_abl, X_train_all[sel_abl[j]]), axis=1)
+        testx_abl = np.concatenate((testx_abl, X_test_all[sel_abl[j]]), axis=1)
+        j += 1
+    
+    # create the best model and evluate
+    model = LGBMClassifier(learning_rate = 0.1, max_depth = 12, n_estimators = 500, random_state = 1)
+    model.fit(trainx_abl, train_label)
+    testy_predict = model.predict(testx_abl)
+    report_test = classification_report(test_label, testy_predict)
+    print('Test report: ')
+    print(report_test)
+    
+# n-gram count vector removed!
+# Test report: 
+#               precision    recall  f1-score   support
+
+#            0       0.87      0.94      0.91       896
+#            1       0.78      0.60      0.68       308
+
+#     accuracy                           0.85      1204
+#    macro avg       0.82      0.77      0.79      1204
+# weighted avg       0.85      0.85      0.85      1204
+
+# cluster count vector removed!
+# Test report: 
+#               precision    recall  f1-score   support
+
+#            0       0.89      0.94      0.91       896
+#            1       0.80      0.65      0.72       308
+
+#     accuracy                           0.87      1204
+#    macro avg       0.84      0.80      0.81      1204
+# weighted avg       0.86      0.87      0.86      1204
+
+# cluster tf-idf removed!
+# Test report: 
+#               precision    recall  f1-score   support
+
+#            0       0.90      0.94      0.92       896
+#            1       0.79      0.68      0.73       308
+
+#     accuracy                           0.87      1204
+#    macro avg       0.84      0.81      0.82      1204
+# weighted avg       0.87      0.87      0.87      1204
+
+# Other removed!
+# Test report: 
+#               precision    recall  f1-score   support
+
+#            0       0.89      0.94      0.91       896
+#            1       0.79      0.65      0.72       308
+
+#     accuracy                           0.87      1204
+#    macro avg       0.84      0.80      0.82      1204
+# weighted avg       0.86      0.87      0.86      1204
+
+#%% We just used n-gram + cluster with count vector features. 
+sel = (0, 1)
+train_set = X_train_all[sel[0]]
+test_set = X_test_all[sel[0]]
+i = 1
+while(len(sel) > i):
+    train_set = np.concatenate((train_set, X_train_all[sel[i]]), axis=1)
+    test_set = np.concatenate((test_set, X_test_all[sel[i]]), axis=1)
+    i += 1
+model = LGBMClassifier(learning_rate = 0.1, max_depth = 12, n_estimators = 500, random_state = 1)
+model.fit(train_set, train_label)
+testy_predict = model.predict(test_set)
+report_test = classification_report(test_label, testy_predict)
+print('Test report: ')
+print(report_test)
+
+# Test report: 
+#               precision    recall  f1-score   support
+
+#            0       0.89      0.94      0.91       896
+#            1       0.78      0.67      0.72       308
+
+#     accuracy                           0.87      1204
+#    macro avg       0.84      0.80      0.82      1204
+# weighted avg       0.86      0.87      0.86      1204
