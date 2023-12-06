@@ -1,3 +1,6 @@
+# This script was used to describe the distribution of drugs and side-effect
+
+
 
 library(tidyverse)
 library(magrittr)
@@ -8,12 +11,11 @@ library(ggraph)
 library(tidygraph)
 
 
-setwd("/Users/seibi/projects/bmi550/final/side_effect_distribution")
+setwd("./side_effect_distribution")
 
 
 
 data = read_csv("./results/bc_drug_side_effect_estimated.csv")
-
 data = data %>% 
     dplyr::select(account_id = `4`, drug_name, symptom_id = `Symptom ID`, negation = `Negation flag`) 
 
@@ -36,7 +38,7 @@ res = as_tibble(do.call(rbind, res_list))
 
 
 # load breast cancer approved drugs
-drug_dict = read_csv("/Users/seibi/projects/bmi550/final/drug_discovery/breast_cancer_drugs_cleaned.csv")
+drug_dict = read_csv("./breast_cancer_drugs_cleaned.csv")
 
 drug_dict = drug_dict %>% 
     mutate(parent_uspmg = tolower(parent_USPMG),
@@ -62,9 +64,6 @@ for (i in 1:nrow(res)){
                             )
 }    
 res = as_tibble(do.call(rbind, res_list))
-
-
-# 198 accounts
 
 
 
@@ -175,28 +174,8 @@ ggsave("./results/bar_functional.png", p, height = 10, width = 12, unit = "in", 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # save
 drug_res = res
-
-
-
-
-
-
-
-
 
 
 
@@ -234,7 +213,7 @@ res = as_tibble(do.call(rbind, res_list))
 
 
 # load symptom dictionary
-sym_dict = read_csv("/Users/seibi/projects/bmi550/final/drug_discovery/covid_bc_sideeffect_dictionary_ver3.csv") %>% 
+sym_dict = read_csv("./covid_bc_sideeffect_dictionary_ver3.csv") %>% 
     distinct(category, id) %>% 
     dplyr::rename(sym_id = id)
 
@@ -518,18 +497,3 @@ for(sym in sig_syms){
 p = egg::ggarrange(plots = plots, ncol = 1)
 
 ggsave("./results/sig_symps.png", p, height = 14, width = 10, unit = "in", dpi = 200)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
