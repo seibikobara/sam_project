@@ -1,4 +1,11 @@
-## NLP project
+# NLP project
+
+# log
+## 12.28.23
+
+- keep the current analysis
+- disproportional analysis, which can account for COVID-19 pandemic or any baseline symptom distribution, may not be feasible due to a small sample size.
+- authorship? we want to have three authors are equally contributed.
 
 
 ## Methods
