@@ -5,7 +5,7 @@ This script was used to detect side effect
 
 
 
-
+# import libraries
 import numpy as np
 import pandas as pd
 import Levenshtein
@@ -13,6 +13,34 @@ import nltk
 import itertools
 import re
 import string
+
+
+
+symptom_dict = {}
+infile = pd.read_excel("covid_bc_sideeffect_dictionary_ver31.xlsx")
+infile = infile.astype(str)
+n , m = infile.shape
+for i in range(n):
+    row = infile.iloc[i,:]
+    symptom_dict[str.strip(row["expression"]).lower()] = row["id"]
+
+
+# Load posts
+# first round
+# data = pd.read_excel("./processed/firstround/bc_drug_discovered_gold_standard_summarized.xlsx")
+
+# second round
+# data = pd.read_excel("./processed/secondround/bc_drug_discovered_gold_standard_summarized.xlsx")
+
+# third round
+data = pd.read_excel('./processed/thirdround/bc_drug_discovered_evalulation_summarised_for_test.xlsx')
+
+
+
+data.fillna("", inplace=True)
+data = data.reset_index(drop=False)
+
+
 
 
 def preprocessing(corpus):
@@ -46,6 +74,13 @@ def run_sliding_window_through_text(words, window_size):
         yield word_window
 
 # Nagation detection
+# Load nagation signs
+negations = []
+infile = open('./neg_trigs.txt')
+for line in infile:
+    negations.append(preprocessing(str.strip(line)))
+
+
 def in_scope(neg_end, text,symptom_expression):
     '''
     Function to check if a symptom occurs within the scope of a negation based on some
@@ -92,28 +127,6 @@ def detect_symptoms(post, symptoms_dict, window_size):
 
 
 
-
-# load the current lexicon of side effect
-symptom_dict = {}
-infile = pd.read_excel("./covid_bc_sideeffect_dictionary_ver3.xlsx")
-infile = infile.astype(str)
-n , m = infile.shape
-for i in range(n):
-    row = infile.iloc[i,:]
-    symptom_dict[str.strip(row["expression"]).lower()] = row["id"]
-
-
-# Load posts
-data = pd.read_excel('./bc_drug_discovered_evalulation_summarised_for_test.xlsx')
-data.fillna("", inplace=True)
-
-
-# Load nagation signs
-negations = []
-infile = open('./neg_trigs.txt')
-for line in infile:
-    negations.append(preprocessing(str.strip(line)))
-
 n, m = data.shape
 
 syms = []
@@ -146,11 +159,16 @@ for i in range(n):
                     if not is_negated:
                         all_nags.append('0')
                     break
+        data.loc[i,"Symptom ID"] = '$$$'+'$$$'.join(all_symptoms)+'$$$'
+        data.loc[i,"Negation flag"] = '$$$'+'$$$'.join(all_nags)+'$$$'
 
-        data.iloc[i,8] = '$$$'+'$$$'.join(all_symptoms)+'$$$'
-        data.iloc[i,9] = '$$$'+'$$$'.join(all_nags)+'$$$'
+# first round
+# data.to_excel("./processed/firstround/bc_drug_discovered_gold_standard_predicted.xlsx")
 
+# second round
+# data.to_excel("./processed/secondround/bc_drug_discovered_gold_standard_predicted.xlsx")
 
+# third round
 data.to_excel("./processed/thirdround/bc_drug_discovered_gold_standard_predicted.xlsx")
 
 

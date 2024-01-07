@@ -1,9 +1,8 @@
 
 '''
-This script was used to evaluate our rule-based model for drug and side-effect discovery
+This script was used to evaluate the model performance.
+Original script made by Abeed Sarker (09/14/2023) was modified for our analysis
 '''
-
-
 
 
 import pandas as pd
@@ -29,9 +28,25 @@ def load_labels(f_path):
                 labeled_dict[id_].append(cui + '-' + str(neg_flag))
     return labeled_dict
 
-infile = './bc_drug_discovered_evalulation_summarised.xlsx'
-outfile = './bc_drug_discovered_gold_standard_predicted.xlsx' 
-#outfile = './UnlabeledSet_annotated_SK.xlsx' 
+
+# first round
+# infile = './processed/firstround/bc_drug_discovered_gold_standard_summarized.xlsx'
+# outfile = './processed/firstround/bc_drug_discovered_gold_standard_predicted.xlsx' 
+
+# second round
+# infile = './processed/secondround/bc_drug_discovered_gold_standard_summarized.xlsx'
+# outfile = './processed/secondround/bc_drug_discovered_gold_standard_predicted.xlsx' 
+
+
+# third round
+# infile = './processed/thirdround/bc_drug_discovered_evalulation_summarised.xlsx'
+# outfile = './processed/thirdround/bc_drug_discovered_gold_standard_predicted.xlsx' 
+
+
+# combined
+infile = './processed/combined/bc_drug_discovered_evalulation_summarised.xlsx'
+outfile = './processed/combined/bc_drug_discovered_gold_standard_predicted.xlsx' 
+
 
 #infile = 's10_annotated.xlsx'
 #outfile = 's10_annotated_result.xlsx'
@@ -64,6 +79,3 @@ precision = tp/(tp+fp)
 f1 = (2*recall*precision)/(recall+precision)
 print('Recall: ',recall,'\nPrecision:',precision,'\nF1-Score:',f1)
 print('{}\t{}\t{}'.format(precision, recall, f1))
-
-
-
