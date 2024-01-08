@@ -1,6 +1,28 @@
 # NLP project
 
 # log
+
+## 01.08.24
+- With Abeed
+  - We will increase sample size, post-doc and other technician of Abeed can share the additional data.
+    - Abeed will email them
+    - a larger sample size may not hold our collapsing assumption.
+      - we have to strategize
+        - cut one month range
+        - using this existing data
+  - Aim1 should be less focused as our model performance may be similar to the previous one
+  - Aim 2 and 3 should be focused.
+    - add discussion on why kinase inhibitor had side-effect for a particular drug
+  - Add manual review of post and add this table in the paper
+    - table should be post text and drug name, side effect
+- Next steps
+  1. wait for the additional data
+  2. run BC classifier
+  3. run side-effect, and drug discovery using the ver2 lexicon.
+  4. complete manuscript
+
+
+
 ## 12.28.23
 
 - keep the current analysis
